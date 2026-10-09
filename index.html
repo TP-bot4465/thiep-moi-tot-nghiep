@@ -12,6 +12,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    // Guest view: names supplied in ?to= are displayed in the greeting, not editable.
+    try {
+      if ((new URLSearchParams(location.search).get('to') || '').trim()) {
+        document.documentElement.classList.add('invited-guest');
+      }
+    } catch (e) { /* Keep the original editor view for invalid URLs. */ }
+  </script>
   <style>
     :root { --cream:#f8fbff;--pale:#eef5ff;--pale2:#e3edfb;--green:#4f74ac;--forest:#355889;--leaf:#85a9db;--gold:#a8c3eb;--ink:#243956;--muted:#6f84a4;--border:#d8e4f3; --shadow: 0 20px 65px rgba(41,79,136,.10); }
     * { box-sizing:border-box; }
@@ -217,6 +225,11 @@
     .nav a:hover, .text-link:hover { color:#5d83bc; }
 
     /* Personalize invite */
+    /* A link with ?to=recipient is an invitation, not an editor. Hide the editor before first paint. */
+    html.invited-guest .invite-personalizer { display:none !important; }
+    html.invited-guest .cover-to { margin-bottom:34px; }
+    html.invited-guest .cover-card { padding-bottom:56px; }
+    @media(max-width:720px) { html.invited-guest .cover-card { padding-bottom:44px; } }
     .invite-personalizer { margin:20px auto 0; text-align:left; max-width:430px; padding:16px 16px 14px; background:rgba(255,255,255,.75); border:1px solid #dde8fb; border-radius:16px; }
     .invite-personalizer label { display:block; margin-bottom:10px; color:var(--forest); font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
     .invite-row { display:flex; gap:10px; align-items:center; }
