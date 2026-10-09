@@ -186,12 +186,18 @@
     .toast.shown{opacity:1;transform:none;}
 
     /* Shared modal shell for campus and parking maps */
-    /* Simple contact links instead of the old RSVP form. */
-    .rsvp-contact-actions { display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap; }
-    .rsvp-contact-actions .button { border-radius:18px; }
-    .rsvp-contact-phone { display:inline-flex;min-height:49px;align-items:center;justify-content:center;padding:13px 22px;border-radius:18px;border:1px solid rgba(255,255,255,.4);color:#f4f7ff;font-size:12px;font-weight:700;letter-spacing:.02em;transition:background .2s ease; }
-    .rsvp-contact-phone:hover { background:rgba(255,255,255,.12); }
-    @media(max-width:440px){ .rsvp-contact-actions{flex-direction:column;} .rsvp-contact-actions .button,.rsvp-contact-phone{width:min(300px,100%);} }
+    /* One-tap attendance confirmation. Client-side only, no server endpoint. */
+    .rsvp-confirm-button { min-width:230px;min-height:54px;border-radius:20px;gap:12px; }
+    .rsvp-confirm-button[disabled] { opacity:1;cursor:default;transform:none; }
+    .rsvp-confirm-button:disabled:hover { background:#e5e8d7; }
+    .rsvp-spinner { display:inline-block;width:18px;height:18px;border:2px solid rgba(41,72,54,.26);border-top-color:#355889;border-radius:50%;animation:rsvp-spin .75s linear infinite; }
+    .rsvp-spinner[hidden] { display:none; }
+    @keyframes rsvp-spin { to { transform:rotate(360deg); } }
+    .rsvp-success-message { margin-top:20px;min-height:0;font-size:16px;line-height:1.7;color:#eef6ff;font-weight:650; }
+    .rsvp-success-message:empty { display:none; }
+    .rsvp-section .rsvp-local-note { margin:9px auto 0;max-width:420px;font-size:11px;color:#cedcf0;line-height:1.7; }
+    .rsvp-local-note[hidden] { display:none; }
+    @media(max-width:440px){ .rsvp-confirm-button{width:min(300px,100%);} }
 
     dialog {border:none;padding:0;background:transparent;max-width:min(480px,calc(100% - 36px));width:100%;color:var(--ink);box-shadow:0 28px 90px rgba(7,22,12,.35);}
     dialog::backdrop {background:rgba(12,36,23,.68);backdrop-filter:blur(4px);}
@@ -545,13 +551,15 @@
     <section class="rsvp-section" id="rsvp">
       <div class="wrap reveal">
         <div class="rsvp-decoration"><svg aria-hidden="true"><use href="#icon-heart"/></svg></div>
-        <p class="eyebrow">03 — <span data-i18n="contactSectionKicker">GIỮ LIÊN LẠC</span></p>
-        <h2><span data-i18n="rsvpLine1">Hẹn gặp bạn</span><br><em data-i18n="rsvpLine2">ngày hôm đó nhé!</em></h2>
-        <p data-i18n="rsvpDescription">Nếu đến được, nhắn mình một tiếng nhé. Mình rất mong được gặp bạn!</p>
-        <div class="rsvp-contact-actions">
-          <a class="button" id="contact-sms" href="sms:0343536370"><span data-i18n="contactSms">Nhắn tin cho mình</span></a>
-          <a class="rsvp-contact-phone" href="tel:0343536370" data-i18n="contactCall">Gọi cho Thanh Phong</a>
-        </div>
+        <p class="eyebrow">03 — <span data-i18n="contactSectionKicker">XÁC NHẬN THAM DỰ</span></p>
+        <h2><span data-i18n="rsvpLine1">Bạn sẽ đến</span><br><em data-i18n="rsvpLine2">chung vui chứ?</em></h2>
+        <p data-i18n="rsvpDescription">Nếu sắp xếp đến được, bạn chỉ cần bấm xác nhận nhé!</p>
+        <button class="button rsvp-confirm-button" type="button" id="rsvp-confirm-button" aria-describedby="rsvp-status">
+          <span id="rsvp-spinner" class="rsvp-spinner" aria-hidden="true" hidden></span>
+          <span id="rsvp-button-label">Xác nhận tham dự</span>
+        </button>
+        <div id="rsvp-status" class="rsvp-success-message" role="status" aria-live="polite" aria-atomic="true"></div>
+        <p id="rsvp-local-note" class="rsvp-local-note" data-i18n="rsvpLocalNote" hidden>Phản hồi này mới được lưu trên trình duyệt của bạn, chưa gửi về Thanh Phong.</p>
       </div>
     </section>
   </main>
@@ -610,17 +618,17 @@ const words = {
   vi: {
     coverKicker:'A SPECIAL INVITATION · 2026',coverTitle1:'Bạn có một',coverTitle2:'lời mời nhỏ.',dear:'Thân gửi',coverNote:'mình có một điều thật đặc biệt muốn chia sẻ cùng bạn.',open:'Mở thiệp mời',coverHint:'Một chút âm nhạc và thật nhiều yêu thương ♡',inviteInputLabel:'Điền tên người được mời',inviteApply:'Cập nhật tên',inviteHint:'Tên sẽ hiển thị ngay trên thiệp và được thêm vào đường link chia sẻ.',inviteRecipientLabel:'Thiệp mời dành cho',campusMapKicker:'CAMPUS MAP',campusMapTitle:'Bản đồ ngay trong thiệp',campusMapDescription:'Mình đã chèn bản đồ trực tiếp vào trang để bạn xem vị trí tại Trường Đại học Tôn Đức Thắng mà không cần rời khỏi thiệp mời.',campusMapNote1:'Bản đồ đang hiển thị khuôn viên trường và vị trí tổ chức.',campusMapNote2:'Nếu cần, bạn vẫn có thể bấm nút mở Google Maps để xem toàn màn hình.',campusMapOpen:'Mở bản đồ toàn màn hình',
     tourBadge:'BẢN ĐỒ KHUÔN VIÊN',tourTiny:'TRƯỜNG ĐẠI HỌC TÔN ĐỨC THẮNG',tourTitle:'Ghé thăm trường một chút nhé!',tourIntro:'Khám phá khuôn viên Đại học Tôn Đức Thắng với tour tham quan 360° chính thức của trường ngay trong thiệp mời.',tourVenueLabel:'ĐỊA ĐIỂM HẸN GẶP',tourVenueNote:'Trường Đại học Tôn Đức Thắng · 19 Nguyễn Hữu Thọ, TP.HCM',tourPinDisclaimer:'Bạn có thể xem trước khuôn viên qua tour 360°. Hẹn gặp bạn tại Sảnh A nhé!',tourFullscreen:'Xem tour 360° toàn màn hình',tourExternal:'Mở trực tiếp trên website TDTU',tourTab360:'Tham quan 360°',tourTabGoogle:'Google Maps',tourFallback:'Không xem được ở đây? Bạn mở tour trực tiếp nhé.',tourGo:'Mở tour',tourGoogleInfo:'Đường đến Trường Đại học Tôn Đức Thắng, 19 Nguyễn Hữu Thọ.',tourDirections:'Xem đường đi',tourDialogTitle:'Trải nghiệm TDTU 360°',tourExternalShort:'Mở trang gốc',tourDialogHelp:'Không xem được bản đồ ở đây? Chọn “Mở trang gốc” nhé.',arrivalKicker:'VISITOR GUIDE',arrivalTitle:'Hướng dẫn đến trường',arrivalIntro:'Một vài thông tin hữu ích để bạn dễ tìm đường, gửi xe và chuẩn bị trước khi đến dự lễ tốt nghiệp.',arrivalTabAround:'Khuôn viên trường',arrivalTabParking:'Hướng dẫn gửi xe',arrivalTabBefore:'Trước khi đến',aroundHeading:'Khám phá khuôn viên TDTU',arrivalAroundText1:'Bạn có thể xem trước khuôn viên trường qua tour tham quan 360° và bản đồ Google Maps ở phía trên.',arrivalAroundText2:'Hẹn bạn ở Sảnh A lúc 15h30 nhé. Nếu chưa quen đường trong trường, bạn cứ gọi cho mình.',aroundExplore:'Xem tour khuôn viên 360°',aroundAddressLabel:'ĐỊA CHỈ TRƯỜNG',aroundVenueLabel:'ĐỊA ĐIỂM TỔ CHỨC',aroundDirections:'Mở chỉ đường Google Maps',parkingHeadingBike:'Đi xe máy',parkingHeadingCar:'Đi ô tô',parkingHeadingTaxi:'Taxi / xe công nghệ',parkingText1:'Bạn có thể vào trường từ Cổng 7 hoặc Cổng 9 để đến khu vực gửi xe máy.',parkingText2:'Cổng 9 có lối dành cho ô tô và khu vực đỗ xe tương ứng.',parkingText3:'Có thể tiếp cận khuôn viên từ Cổng 1, 2, 3, 4 hoặc 5. Cổng 1 hoặc 2 thuận tiện hơn nếu muốn đi bộ ngắn.',parkingNotice:'Dưới đây là sơ đồ gửi xe để bạn tiện theo dõi. Khi đến nơi, bạn có thể hỏi bảo vệ để được hướng dẫn đến chỗ gửi xe.',parkingFooter:'Sơ đồ gửi xe · TDTU',viewFullSize:'Xem bản đồ lớn',beforeTitle1:'Chuẩn bị giấy tờ',beforeTitle2:'Thông tin buổi lễ',beforeTitle3:'Cần hỗ trợ?',beforeItem1:'Vui lòng mang theo CCCD khi vào trường. Nếu là sinh viên TDTU, bạn có thể mang theo thẻ sinh viên.',beforeItem2:'Lễ tốt nghiệp của Thanh Phong diễn ra từ 15h30 - 17h30 ngày 17/10/2026 tại Sảnh A. Bạn đến sớm một chút để gửi xe và chụp hình cùng mình nhé!',beforeItem3:'Bạn có thể gọi cho mình nếu cần chỉ đường hoặc tìm Sảnh A nhé.',beforeNote:'Cần chỉ đường hoặc tìm Sảnh A? Gọi cho mình nhé!',
-    navDetails:'Buổi lễ',navLetter:'Lời nhắn',navRsvp:'Liên hệ',contactSectionKicker:'GIỮ LIÊN LẠC',contactSms:'Nhắn tin cho mình',contactCall:'Gọi cho Thanh Phong',heroKicker:'A NEW CHAPTER BEGINS',heroLine1:'Một chặng đường',heroLine2:'đáng nhớ.',heroLine3:'Một khởi đầu mới.',heroDescription:'Ngày tốt nghiệp của mình sẽ vui hơn nhiều nếu có bạn đến chung vui.',graduationOf:'LỄ TỐT NGHIỆP CỦA',viewDetails:'Thông tin buổi lễ',readNote:'Đọc lời nhắn',artCard:'Class of',scroll:'CUỘN XUỐNG ĐỂ KHÁM PHÁ',madeWithLove:'MADE WITH LOVE ♡',
+    navDetails:'Buổi lễ',navLetter:'Lời nhắn',navRsvp:'Xác nhận',contactSectionKicker:'XÁC NHẬN THAM DỰ',rsvpButton:'Xác nhận tham dự',rsvpLoading:'Đang xác nhận...',rsvpSuccess:'OK! Đã xác nhận',rsvpSuccessDetail:'✓ OK! Hẹn gặp bạn ngày 17/10 nhé!',rsvpLocalNote:'Phản hồi được lưu trên trình duyệt này, chưa gửi đến Thanh Phong.',heroKicker:'A NEW CHAPTER BEGINS',heroLine1:'Một chặng đường',heroLine2:'đáng nhớ.',heroLine3:'Một khởi đầu mới.',heroDescription:'Ngày tốt nghiệp của mình sẽ vui hơn nhiều nếu có bạn đến chung vui.',graduationOf:'LỄ TỐT NGHIỆP CỦA',viewDetails:'Thông tin buổi lễ',readNote:'Đọc lời nhắn',artCard:'Class of',scroll:'CUỘN XUỐNG ĐỂ KHÁM PHÁ',madeWithLove:'MADE WITH LOVE ♡',
     detailsKicker:'THE CELEBRATION',detailsLine1:'Hẹn gặp bạn',detailsLine2:'vào ngày đặc biệt.',detailsDescription:'Ngày 17/10 này, mình mong có bạn đến chụp hình và chung vui cùng mình!',dateLabel:'Ngày tổ chức',timeLabel:'Thời gian',placeLabel:'Địa điểm',schoolLabel:'Trường',contactLabel:'Liên hệ / xác nhận',contactNote:'Gọi hoặc nhắn tin để xác nhận tham dự.',sendSMS:'Mở ứng dụng SMS để gửi phản hồi',directions:'Xem đường đi',addCalendar:'Thêm vào lịch',saveDate:'SAVE THE DATE',dateCardLine1:'A moment',dateCardLine2:'to remember.',countdownSoon:'Ngày gặp mặt đang chờ được điền vào thiệp ♡',days:'Ngày',hours:'Giờ',minutes:'Phút',seconds:'Giây',
-    letterKicker:'FROM ME TO YOU',letterTitle1:'Có đôi lời',letterTitle2:'muốn gửi bạn.',rsvpLine1:'Hẹn gặp bạn',rsvpLine2:'ngày hôm đó nhé!',rsvpDescription:'Nếu đến được, nhắn mình một tiếng nhé. Mình rất mong được gặp bạn!',confirm:'Phản hồi lời mời',footerTop:'THANK YOU FOR BEING PART OF MY STORY',footerTitle:'Hẹn gặp bạn nhé!',footerMessage:'Cảm ơn bạn đã dành thời gian đọc thiệp. Mong được gặp bạn ngày 17/10 nhé!',backTop:'TRỞ VỀ ĐẦU TRANG ↑',
+    letterKicker:'FROM ME TO YOU',letterTitle1:'Có đôi lời',letterTitle2:'muốn gửi bạn.',rsvpLine1:'Bạn sẽ đến',rsvpLine2:'chung vui chứ?',rsvpDescription:'Nếu sắp xếp đến được, bạn chỉ cần bấm xác nhận nhé!',confirm:'Phản hồi lời mời',footerTop:'THANK YOU FOR BEING PART OF MY STORY',footerTitle:'Hẹn gặp bạn nhé!',footerMessage:'Cảm ơn bạn đã dành thời gian đọc thiệp. Mong được gặp bạn ngày 17/10 nhé!',backTop:'TRỞ VỀ ĐẦU TRANG ↑',
     rsvpDialogKicker:'YOUR REPLY',dialogTitle:'Gửi lời hồi đáp',dialogHelp:'Chọn một câu trả lời và tạo tin nhắn để gửi cho mình nhé.',yourName:'Tên của bạn',yourReply:'Bạn muốn phản hồi thế nào?',replyYes:'Mình sẽ đến ♡',replyMaybe:'Mình chưa chắc',replyNo:'Mình không đến được',yourNote:'Lời nhắn (không bắt buộc)',createReply:'Tạo tin nhắn phản hồi',replyNotice:'Trang web không lưu thông tin. Bạn sẽ sao chép lời hồi đáp rồi gửi riêng cho người mời.',missing:'Sẽ cập nhật',hello:'bạn thân mến',countdownCompleted:'Ngày tuyệt vời đã đến!',copied:'Đã sao chép lời phản hồi. Hãy dán vào Zalo, Messenger hoặc tin nhắn để gửi nhé!',copyFailed:'Không thể sao chép tự động. Hãy chọn và sao chép nội dung phía dưới.',linkCopied:'Đã sao chép đường dẫn thiệp mời!',musicStarted:'Đã bật giai điệu',musicStopped:'Đã tắt giai điệu',messageIntro:'Chào',messageTo:'Mình',messageAttend:'sẽ đến chung vui',messageMaybe:'chưa chắc có thể đến',messageDecline:'rất tiếc không thể đến',messageEvent:'lễ tốt nghiệp của',notePrefix:'Lời nhắn',emailOpen:'Đã mở email soạn sẵn. Hãy kiểm tra và bấm Gửi trong ứng dụng email.',copiedLabel:'Nội dung phản hồi:'
   },
   en: {
     coverKicker:'A SPECIAL INVITATION · 2026',coverTitle1:'A little',coverTitle2:'invitation for you.',dear:'Dear',coverNote:'I have something really special to share with you.',open:'Open invitation',coverHint:'A little music and lots of love ♡',inviteInputLabel:'Enter the guest name',inviteApply:'Apply name',inviteHint:'The name will appear on the invitation and be added to the share link.',inviteRecipientLabel:'This invitation is for',campusMapKicker:'CAMPUS MAP',campusMapTitle:'A map right inside the invitation',campusMapDescription:'I added a live map directly into the page so you can view the location at Ton Duc Thang University without leaving the invitation.',campusMapNote1:'The embedded map shows the campus area and event location.',campusMapNote2:'You can still open Google Maps in full screen if needed.',campusMapOpen:'Open full map',
     tourBadge:'CAMPUS GUIDE',tourTiny:'TON DUC THANG UNIVERSITY',tourTitle:'Take a little campus tour!',tourIntro:'Explore Ton Duc Thang University with its official 360° virtual tour, right inside this invitation.',tourVenueLabel:'MEETING POINT',tourVenueNote:'Ton Duc Thang University · 19 Nguyen Huu Tho, HCMC',tourPinDisclaimer:'Take a look around campus before you arrive. See you at Hall A!',tourFullscreen:'View 360° tour in full screen',tourExternal:'Open the official TDTU tour',tourTab360:'360° campus tour',tourTabGoogle:'Google Maps',tourFallback:'Having trouble viewing the tour? Open it directly.',tourGo:'Open tour',tourGoogleInfo:'Directions to Ton Duc Thang University, 19 Nguyen Huu Tho Street.',tourDirections:'Get directions',tourDialogTitle:'Explore TDTU in 360°',tourExternalShort:'Open original',tourDialogHelp:'Can’t view the tour here? Choose “Open original”.',
-    arrivalKicker:'VISITOR GUIDE',arrivalTitle:'Getting to campus',arrivalIntro:'A few useful tips to help you find your way, park and prepare for the graduation celebration.',arrivalTabAround:'Around campus',arrivalTabParking:'Parking guide',arrivalTabBefore:'Before you arrive',aroundHeading:'Explore TDTU campus',arrivalAroundText1:'You can explore the campus ahead of time using the official 360° tour and Google Maps above.',arrivalAroundText2:'See you at Hall A at 3:30 PM! If you need help finding your way, just give me a call.',aroundExplore:'View the 360° campus tour',aroundAddressLabel:'UNIVERSITY ADDRESS',aroundVenueLabel:'EVENT LOCATION',aroundDirections:'Open directions in Google Maps',parkingHeadingBike:'Motorbike',parkingHeadingCar:'Car',parkingHeadingTaxi:'Taxi / ride-hailing',parkingText1:'Enter through Gate 7 or Gate 9 to reach the motorbike parking area.',parkingText2:'Gate 9 has a dedicated car entrance and parking area.',parkingText3:'You may use Gates 1, 2, 3, 4 or 5. Gates 1 or 2 can be more convenient for a shorter walk.',parkingNotice:'If you need help finding parking when you arrive, just ask campus security.',parkingFooter:'TDTU · Parking guide',viewFullSize:'View larger map',beforeTitle1:'Bring identification',beforeTitle2:'Event details',beforeTitle3:'Need assistance?',beforeItem1:'Please bring your citizen ID to the university gate. TDTU students may also use their student card.',beforeItem2:'Thanh Phong’s graduation celebration is at 3:30 PM on October 17, 2026, at Hall A. Come a little early so we have time for a photo!',beforeItem3:'Call me if you need help finding your way to Hall A.',beforeNote:'Need help finding Hall A? Just give me a call!',navDetails:'The day',navLetter:'A note',navRsvp:'Contact',contactSectionKicker:'KEEP IN TOUCH',contactSms:'Send me a text',contactCall:'Call Thanh Phong',heroKicker:'A NEW CHAPTER BEGINS',heroLine1:'One beautiful',heroLine2:'milestone.',heroLine3:'A new beginning.',heroDescription:'Graduation day would be even better if you could come celebrate with me.',graduationOf:'CELEBRATING THE GRADUATION OF',viewDetails:'Event details',readNote:'Read my note',artCard:'Class of',scroll:'SCROLL TO DISCOVER',madeWithLove:'MADE WITH LOVE ♡',
+    arrivalKicker:'VISITOR GUIDE',arrivalTitle:'Getting to campus',arrivalIntro:'A few useful tips to help you find your way, park and prepare for the graduation celebration.',arrivalTabAround:'Around campus',arrivalTabParking:'Parking guide',arrivalTabBefore:'Before you arrive',aroundHeading:'Explore TDTU campus',arrivalAroundText1:'You can explore the campus ahead of time using the official 360° tour and Google Maps above.',arrivalAroundText2:'See you at Hall A at 3:30 PM! If you need help finding your way, just give me a call.',aroundExplore:'View the 360° campus tour',aroundAddressLabel:'UNIVERSITY ADDRESS',aroundVenueLabel:'EVENT LOCATION',aroundDirections:'Open directions in Google Maps',parkingHeadingBike:'Motorbike',parkingHeadingCar:'Car',parkingHeadingTaxi:'Taxi / ride-hailing',parkingText1:'Enter through Gate 7 or Gate 9 to reach the motorbike parking area.',parkingText2:'Gate 9 has a dedicated car entrance and parking area.',parkingText3:'You may use Gates 1, 2, 3, 4 or 5. Gates 1 or 2 can be more convenient for a shorter walk.',parkingNotice:'If you need help finding parking when you arrive, just ask campus security.',parkingFooter:'TDTU · Parking guide',viewFullSize:'View larger map',beforeTitle1:'Bring identification',beforeTitle2:'Event details',beforeTitle3:'Need assistance?',beforeItem1:'Please bring your citizen ID to the university gate. TDTU students may also use their student card.',beforeItem2:'Thanh Phong’s graduation celebration is at 3:30 PM on October 17, 2026, at Hall A. Come a little early so we have time for a photo!',beforeItem3:'Call me if you need help finding your way to Hall A.',beforeNote:'Need help finding Hall A? Just give me a call!',navDetails:'The day',navLetter:'A note',navRsvp:'RSVP',contactSectionKicker:'RSVP',rsvpButton:'Confirm attendance',rsvpLoading:'Confirming...',rsvpSuccess:'OK! Confirmed',rsvpSuccessDetail:'✓ OK! See you on October 17!',rsvpLocalNote:'This response is saved in this browser only and has not been sent to Thanh Phong.',heroKicker:'A NEW CHAPTER BEGINS',heroLine1:'One beautiful',heroLine2:'milestone.',heroLine3:'A new beginning.',heroDescription:'Graduation day would be even better if you could come celebrate with me.',graduationOf:'CELEBRATING THE GRADUATION OF',viewDetails:'Event details',readNote:'Read my note',artCard:'Class of',scroll:'SCROLL TO DISCOVER',madeWithLove:'MADE WITH LOVE ♡',
     detailsKicker:'THE CELEBRATION',detailsLine1:'See you on',detailsLine2:'the special day.',detailsDescription:'I hope you can join me for photos and a little celebration on October 17!',dateLabel:'Date',timeLabel:'Time',placeLabel:'Venue',schoolLabel:'University',contactLabel:'Contact / RSVP',contactNote:'Call or text to confirm attendance.',sendSMS:'Open SMS to send reply',directions:'Get directions',addCalendar:'Add to calendar',saveDate:'SAVE THE DATE',dateCardLine1:'A moment',dateCardLine2:'to remember.',countdownSoon:'The celebration date is coming soon ♡',days:'Days',hours:'Hrs',minutes:'Min',seconds:'Sec',
-    letterKicker:'FROM ME TO YOU',letterTitle1:'A little note',letterTitle2:'from me to you.',rsvpLine1:'Hope to see you',rsvpLine2:'on graduation day!',rsvpDescription:'If you can come, send me a quick message. I would love to see you there!',confirm:'Reply to invitation',footerTop:'THANK YOU FOR BEING PART OF MY STORY',footerTitle:'See you there!',footerMessage:'Thanks for reading my invitation. Hope to see you on October 17!',backTop:'BACK TO TOP ↑',
+    letterKicker:'FROM ME TO YOU',letterTitle1:'A little note',letterTitle2:'from me to you.',rsvpLine1:'Will you join',rsvpLine2:'the celebration?',rsvpDescription:'If you can make it, just tap the button below!',confirm:'Reply to invitation',footerTop:'THANK YOU FOR BEING PART OF MY STORY',footerTitle:'See you there!',footerMessage:'Thanks for reading my invitation. Hope to see you on October 17!',backTop:'BACK TO TOP ↑',
     rsvpDialogKicker:'YOUR REPLY',dialogTitle:'Send your reply',dialogHelp:'Choose a response and prepare a little message for me.',yourName:'Your name',yourReply:'Your RSVP',replyYes:"I'll be there ♡",replyMaybe:'Not sure yet',replyNo:"I can't make it",yourNote:'A note (optional)',createReply:'Prepare reply message',replyNotice:'This site does not store responses. Copy your message and send it directly to the host.',missing:'To be announced',hello:'my dear friend',countdownCompleted:'The special day is here!',copied:'Reply copied. Paste it into your messaging app and send it to the host!',copyFailed:'Could not copy automatically. Please select and copy the text below.',linkCopied:'Invitation link copied!',musicStarted:'Music on',musicStopped:'Music off',messageIntro:'Hi',messageTo:'I',messageAttend:'will be there to celebrate',messageMaybe:'may be able to come',messageDecline:'sadly cannot make it to',messageEvent:'the graduation of',notePrefix:'Message',emailOpen:'A draft email has opened. Please check it and press Send in your email app.',copiedLabel:'Your reply:'
   }
 };
@@ -662,15 +670,6 @@ function setupArrivalTabs(){
 }
 
 
-function updateContactLink() {
-  const sms = $('#contact-sms');
-  if (!sms) return;
-  const greeting = language === 'vi'
-    ? ('Phong ơi, ' + (recipient ? 'mình là ' + recipient + '. ' : '') + 'Mình nhận được thiệp mời tốt nghiệp rồi nhé!')
-    : ('Hi Phong! ' + (recipient ? 'This is ' + recipient + '. ' : '') + 'I got your graduation invitation. Thank you!');
-  const separator = /iPad|iPhone|iPod/i.test(navigator.userAgent) ? '&' : '?';
-  sms.href = 'sms:' + INVITATION.replyPhone + separator + 'body=' + encodeURIComponent(greeting);
-}
 function updateRecipient(name, syncUrl=true) {
   recipient = String(name || '').trim().slice(0,80);
   if ($('#recipient-input')) $('#recipient-input').value = recipient;
@@ -681,7 +680,7 @@ function updateRecipient(name, syncUrl=true) {
     if (recipient) { nameEl.textContent = recipient; wrap.hidden = false; }
     else { wrap.hidden = true; nameEl.textContent = ''; }
   }
-  updateContactLink();
+  renderRsvpConfirmation();
   if (syncUrl) {
     try {
       const url = new URL(window.location.href);
@@ -719,6 +718,7 @@ function applyLanguage(lang) {
   } else {$('#event-date').textContent=t('missing');$('#event-day').textContent='';}
   $('#countdown-hint').textContent=t('countdownSoon');
   syncMapEmbed();
+  renderRsvpConfirmation();
   updateCountdown();
   try {const url=new URL(window.location.href);url.searchParams.set('lang',lang);history.replaceState({},'',url.toString())}catch(e){}
 }
@@ -792,6 +792,49 @@ $('#open-button').addEventListener('click',()=>{
   setTimeout(()=>$('#cover').remove(),850);
 },{once:true});
 $('#share-button').addEventListener('click',async()=>{if(navigator.share && /^https?:$/.test(location.protocol)) {try{await navigator.share({title:document.title,text:'Một lời mời tốt nghiệp dành cho bạn ♡',url:location.href});return;}catch(e){if(e.name==='AbortError')return;}}const ok=await copyText(location.href);showToast(ok?t('linkCopied'):t('copyFailed'));});
+
+
+// The page is static on GitHub Pages. This records the visitor's selection
+// on that browser only; it does not notify the host or claim server success.
+const confirmedOnThisPage = new Set();
+let rsvpPending = false;
+let rsvpPendingName = '';
+function rsvpStorageKey(name=recipient) {
+  const normalized=String(name || 'khach-moi').trim().toLocaleLowerCase('vi-VN');
+  return 'tp-graduation-attendance-2026-10-17:'+encodeURIComponent(normalized);
+}
+function isRsvpMarked(name=recipient) {
+  const key=rsvpStorageKey(name);
+  if (confirmedOnThisPage.has(key)) return true;
+  try { return localStorage.getItem(key)==='yes'; } catch(e) { return false; }
+}
+function renderRsvpConfirmation() {
+  const button=$('#rsvp-confirm-button');
+  if(!button) return;
+  const loading=rsvpPending && rsvpPendingName===recipient;
+  const done=isRsvpMarked(recipient);
+  button.disabled=loading || done;
+  $('#rsvp-spinner').hidden=!loading;
+  $('#rsvp-button-label').textContent=loading ? t('rsvpLoading') : done ? t('rsvpSuccess') : t('rsvpButton');
+  const status=$('#rsvp-status');
+  status.textContent=done ? t('rsvpSuccessDetail') : '';
+  $('#rsvp-local-note').hidden=!done;
+}
+$('#rsvp-confirm-button').addEventListener('click',()=>{
+  if(rsvpPending || isRsvpMarked(recipient)) return;
+  const name=recipient;
+  rsvpPending=true;
+  rsvpPendingName=name;
+  renderRsvpConfirmation();
+  window.setTimeout(()=>{
+    const key=rsvpStorageKey(name);
+    confirmedOnThisPage.add(key);
+    try { localStorage.setItem(key,'yes'); } catch(e) { /* Private mode: keep in memory. */ }
+    rsvpPending=false;
+    rsvpPendingName='';
+    renderRsvpConfirmation();
+  },1250);
+});
 
 // Reveal after opening; content remains readable if IntersectionObserver isn't supported.
 if('IntersectionObserver' in window){const observer=new IntersectionObserver(items=>{items.forEach(item=>{if(item.isIntersecting){item.target.classList.add('visible');observer.unobserve(item.target);}})},{threshold:.12});document.querySelectorAll('.reveal').forEach(e=>observer.observe(e));}
